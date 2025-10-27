@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Button, Container, Spinner } from 'react-bootstrap';
-import api from '../api/axios';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Form, Button, Container, Spinner, Card } from "react-bootstrap";
+import api from "../api/axios";
 
 export default function BookForm({ editMode }) {
   const [form, setForm] = useState({
-    title: '',
-    author: '',
-    year: '',
-    genre: ''
+    title: "",
+    author: "",
+    year: "",
+    genre: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,70 +19,81 @@ export default function BookForm({ editMode }) {
       (async () => {
         try {
           const res = await api.get(`/${id}`);
-          setForm({
-            title: res.data.title || '',
-            author: res.data.author || '',
-            year: res.data.year || '',
-            genre: res.data.genre || ''
-          });
-        } catch (err) {
-          console.error(err);
-          alert('Cannot load book');
+          setForm(res.data);
+        } catch {
+          alert("Cannot load book details.");
         }
       })();
     }
   }, [editMode, id]);
 
-  const onChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const onSubmit = async e => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.author) {
-      alert('Title and Author are required');
-      return;
-    }
+    if (!form.title || !form.author) return alert("Title and Author required.");
+
     setLoading(true);
     try {
       if (editMode) {
-        await api.put(`/${id}`, { ...form, year: form.year ? Number(form.year) : undefined });
-        alert('Book updated');
+        await api.put(`/${id}`, { ...form });
+        alert("Book updated successfully!");
       } else {
-        await api.post('/', { ...form, year: form.year ? Number(form.year) : undefined });
-        alert('Book created');
+        await api.post("/", { ...form });
+        alert("Book added successfully!");
       }
-      navigate('/books');
-    } catch (err) {
-      console.error(err);
-      alert('Save failed');
+      navigate("/books");
+    } catch {
+      alert("Failed to save book.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container className="mt-3">
-      <h2>{editMode ? 'Edit Book' : 'Add Book'}</h2>
-      <Form onSubmit={onSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label>Title *</Form.Label>
-          <Form.Control name="title" value={form.title} onChange={onChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Author *</Form.Label>
-          <Form.Control name="author" value={form.author} onChange={onChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Year</Form.Label>
-          <Form.Control name="year" value={form.year} onChange={onChange} type="number" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Genre</Form.Label>
-          <Form.Control name="genre" value={form.genre} onChange={onChange} />
-        </Form.Group>
-        <Button type="submit" variant="success" disabled={loading}>
-          {loading ? <Spinner animation="border" size="sm" /> : 'Save'}
-        </Button>
-      </Form>
+    <Container className="my-5">
+      <Card
+        className="shadow-lg border-0 mx-auto"
+        style={{ maxWidth: "650px", borderRadius: "16px" }}
+      >
+        <Card.Body className="p-5">
+          <h3 className="fw-bold text-dark mb-4">
+            {editMode ? "✏️ Edit Book" : "➕ Add New Book"}
+          </h3>
+          <Form onSubmit={onSubmit}>
+            {["title", "author", "year", "genre"].map((field, i) => (
+              <Form.Group className="mb-3" key={i}>
+                <Form.Label className="fw-semibold text-secondary text-capitalize">
+                  {field}
+                  {["title", "author"].includes(field) && " *"}
+                </Form.Label>
+                <Form.Control
+                  name={field}
+                  type={field === "year" ? "number" : "text"}
+                  value={form[field]}
+                  onChange={onChange}
+                  placeholder={`Enter ${field}`}
+                  className="py-2"
+                />
+              </Form.Group>
+            ))}
+            <Button
+              type="submit"
+              variant="danger"
+              className="w-100 mt-3 fw-semibold"
+              disabled={loading}
+            >
+              {loading ? (
+                <Spinner animation="border" size="sm" />
+              ) : editMode ? (
+                "Update Book"
+              ) : (
+                "Save Book"
+              )}
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
     </Container>
   );
 }

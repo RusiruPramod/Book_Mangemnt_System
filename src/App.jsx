@@ -1,24 +1,24 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import AppNav from "./components/Navbar";
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Books from "./pages/Books";
-import AddBook from "./pages/AddBook";
-import EditBook from "./pages/EditBook";
+import AddBook from "./modal/AddBook";
+import EditBook from "./modal/EditBook";
 import Footer from "./components/Footer";
 
 export default function App() {
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <AppNav />
-      <div className="flex-grow-1">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navbar />
+      <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/books" element={<Books />} />
           <Route path="/books/new" element={<AddBook />} />
           <Route path="/books/:id/edit" element={<EditBook />} />
         </Routes>
-      </div>
+      </main>
       <Footer />
     </div>
   );
